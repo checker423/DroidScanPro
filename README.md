@@ -27,8 +27,8 @@
 ## 📦 Installation
 ```powershell
 # 1️⃣ Clone the repo
-git clone https://github.com/<your‑username>/droidscan-pro.git
-cd droidscan-pro/SZDRFTYG
+git clone https://github.com/checker423/DroidScanPro.git
+cd DroidScanPro/SZDRFTYG
 
 # 2️⃣ Create and activate a virtual environment
 python -m venv .venv
@@ -115,7 +115,7 @@ This project is licensed under the **MIT License** – see the [LICENSE](LICENSE
 ---
 
 ## 📞 Contact
-- **Author:** Vansh (GitHub: `@vansh`) 
+- **Author:** Vansh (GitHub: [`@checker423`](https://github.com/checker423))
 - **Issues:** Please open a GitHub Issue for bugs or feature requests.
 
 ---
