@@ -24,7 +24,7 @@ engine = ScanEngine()
 adb = ADBWrapper(adb_path)
 
 # Mock settings for demonstration
-MOCK_MODE = False
+MOCK_MODE = True
 
 # Progress tracking for scans
 scan_progress       = {"status": "idle", "percent": 0, "current_task": "", "results": None}
