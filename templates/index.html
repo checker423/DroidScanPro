@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DroidScan Pro | Advanced Android Security</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body data-theme="dark">
+    <!-- Particle Background -->
+    <canvas id="particle-canvas" style="position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.6;"></canvas>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i data-lucide="shield-check" class="logo-icon"></i>
+                <span>DroidScan Pro</span>
+            </div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" data-view="dashboard">
+                    <i data-lucide="layout-dashboard"></i> Dashboard
+                </a>
+                <a href="#" class="nav-item" data-view="scanner">
+                    <i data-lucide="shield-alert"></i> Deep Scan
+                </a>
+                <a href="#" class="nav-item" data-view="virusscan">
+                    <i data-lucide="bug"></i> Virus Scan
+                </a>
+                <a href="#" class="nav-item" data-view="processes">
+                    <i data-lucide="activity"></i> Task Manager
+                </a>
+                <a href="#" class="nav-item" data-view="explorer">
+                    <i data-lucide="folder-tree"></i> File Explorer
+                </a>
+                <a href="#" class="nav-item" data-view="history">
+                    <i data-lucide="history"></i> History
+                </a>
+                <a href="#" class="nav-item" data-view="settings">
+                    <i data-lucide="settings"></i> Settings
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="connection-status" id="connection-status">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Checking connection...</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <h1 id="view-title">Dashboard</h1>
+                    <span class="breadcrumb">Home / Dashboard</span>
+                </div>
+                <div class="header-right" style="display: flex; gap: 16px; align-items: center; position:relative; z-index:10;">
+                    <button id="theme-toggle" class="btn-icon" style="background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 50%; width: 40px; height: 40px;">
+                        <i data-lucide="sun"></i>
+                    </button>
+                    <!-- Enhanced Device Badge -->
+                    <div id="device-badge" onclick="toggleDeviceModal()" style="display:flex;align-items:center;gap:12px;background:var(--bg-panel);border:1px solid var(--border-color);border-radius:14px;padding:8px 16px;min-width:220px;box-shadow:var(--shadow-sm);transition:all 0.3s;cursor:pointer;">
+                        <div id="device-avatar" style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--accent-primary),#c084fc);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">📱</div>
+                        <div style="flex:1;min-width:0;">
+                            <div id="header-device-name" style="font-weight:700;font-size:0.88rem;color:var(--text-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">No Device</div>
+                            <div id="header-device-sub" style="font-size:0.72rem;color:var(--text-muted);white-space:nowrap;">Connect via USB</div>
+                        </div>
+                        <div id="header-battery-pill" style="display:none;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.4);border-radius:20px;padding:2px 8px;font-size:0.72rem;font-weight:700;color:#10b981;white-space:nowrap;">
+                            🔋 <span id="header-battery-val">--</span>%
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard View -->
+            <div id="dashboard-view" class="view-content active">
+                <!-- System Vitals Grid -->
+                <div class="vitals-grid">
+                    <div class="vital-card">
+                        <i data-lucide="battery-charging" style="color: var(--color-success); width:28px; height:28px;"></i>
+                        <div>
+                            <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Battery Level</span>
+                            <div id="vital-battery" style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 1.4rem; color: var(--text-main); margin-top:2px;">--%</div>
+                        </div>
+                    </div>
+                    <div class="vital-card">
+                        <i data-lucide="hard-drive" style="color: var(--color-info); width:28px; height:28px;"></i>
+                        <div>
+                            <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Internal Storage</span>
+                            <div id="vital-storage" style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 1.4rem; color: var(--text-main); margin-top:2px;">-- GB Free</div>
+                        </div>
+                    </div>
+                    <div class="vital-card">
+                        <i data-lucide="cpu" style="color: var(--color-warning); width:28px; height:28px;"></i>
+                        <div>
+                            <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Memory (RAM)</span>
+                            <div id="vital-ram" style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 1.4rem; color: var(--text-main); margin-top:2px;">-- / -- GB</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card risk">
+                        <h3>Overall Security Score</h3>
+                        <div class="risk-gauge-container">
+                            <canvas id="risk-gauge"></canvas>
+                            <div class="score-display">
+                                <span id="main-score">--</span>
+                                <span class="score-label">Secure</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i data-lucide="package" class="card-icon"></i>
+                        <div class="stat-info">
+                            <label>Apps Scanned</label>
+                            <span id="total-apps">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card warning">
+                        <i data-lucide="alert-triangle" class="card-icon"></i>
+                        <div class="stat-info">
+                            <label>Threats Detected</label>
+                            <span id="threats-found">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-secondary">
+                    <div class="panel threats-panel">
+                        <div class="panel-header">
+                            <h3>Recent Detections</h3>
+                            <button class="btn-text" onclick="document.querySelector('[data-view=\'history\']').click()">View History</button>
+                        </div>
+                        <div class="threat-list" id="recent-threats">
+                            <div class="empty-state">No threats detected in latest scan.</div>
+                        </div>
+                    </div>
+                    <div class="panel logs-panel">
+                        <div class="panel-header">
+                            <h3>Activity Logs</h3>
+                            <div class="log-controls">
+                                <span class="pulse-icon"></span>
+                                Live Feed
+                            </div>
+                        </div>
+                        <div class="log-container" id="log-content">
+                            <div class="log-entry system">[SYSTEM] Dashboard initialized with premium UI.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scanner View -->
+            <div id="scanner-view" class="view-content">
+                <div class="scan-hero">
+                    <div class="scan-visual">
+                        <div class="scan-ring outer"></div>
+                        <div class="scan-ring middle"></div>
+                        <div class="scan-ring inner">
+                            <i data-lucide="radar" id="scan-btn-icon"></i>
+                        </div>
+                        <div class="scan-beam"></div>
+                    </div>
+                    <h2>Deep Security Analysis</h2>
+                    <p>Advanced heuristic and permission-based scanning for unknown threats and behavioral anomalies.</p>
+
+                    <div style="margin:20px auto 0; max-width:480px; background:var(--bg-main); border:1px solid var(--border-color); border-radius:14px; padding:18px 20px;">
+                        <div style="display:flex;gap:10px;margin-bottom:12px;">
+                            <button id="scan-mode-quick" onclick="setScanMode('quick')" style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--accent-primary);background:var(--accent-primary);color:#fff;font-weight:700;cursor:pointer;font-size:.85rem;transition:all 0.2s;">
+                                ⚡ Quick Check
+                            </button>
+                            <button id="scan-mode-deep" onclick="setScanMode('deep')" style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--border-color);background:transparent;color:var(--text-main);font-weight:600;cursor:pointer;font-size:.85rem;transition:all 0.2s;">
+                                🔬 Deep Audit
+                            </button>
+                        </div>
+                        <div style="display:flex;align-items:center;justify-content:space-between;">
+                            <span id="eta-label" style="font-size:0.82rem;color:var(--text-muted);">⏱ Est: calculating...</span>
+                            <label style="font-size:0.8rem;color:var(--text-muted);display:flex;align-items:center;gap:6px;cursor:pointer;">
+                                <input type="checkbox" id="setting-heuristic" checked style="accent-color:var(--accent-primary);"> AI Heuristics
+                            </label>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:28px;">
+                        <button class="btn-primary" id="start-scan-btn" style="min-width:240px;padding:14px 28px;font-size:1.05rem;letter-spacing:0.5px;">
+                            <i data-lucide="shield" style="display:inline-block;vertical-align:middle;margin-right:8px;width:20px;height:20px;"></i>
+                            INITIATE SCAN
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Security Scan Progress -->
+                <div class="scan-progress-container" id="scan-progress-area" style="display: none; max-width: 620px; margin: 30px auto 0;">
+                    <p style="font-size:0.8rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--accent-primary);margin-bottom:12px;text-align:center;">Analyzing System Integrity</p>
+                    <div class="progress-bar-wrapper">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="scan-progress-fill"></div>
+                        </div>
+                        <span id="scan-percent">0%</span>
+                    </div>
+                    <p id="scan-status-text" style="text-align:center;margin-top:8px;font-family:'Courier New',monospace;">Connecting to daemon...</p>
+                </div>
+
+                <div class="scan-summary-results" id="scan-results-area" style="display: none; max-width: 620px; margin: 20px auto 0;"></div>
+            </div>
+
+            <!-- Virus Scan View -->
+            <div id="virusscan-view" class="view-content">
+                <div class="scan-hero">
+                    <div class="scan-visual">
+                        <div class="scan-ring outer" style="border-color:rgba(239,68,68,0.3);"></div>
+                        <div class="scan-ring middle" style="border-color:rgba(239,68,68,0.5);"></div>
+                        <div class="scan-ring inner" style="background:radial-gradient(circle,rgba(239,68,68,.15),rgba(239,68,68,.03));border-color:#ef4444;box-shadow:0 0 30px rgba(239,68,68,.3),inset 0 0 20px rgba(239,68,68,.1);">
+                            <i data-lucide="bug" style="color:#ef4444;width:40px;height:40px;filter:drop-shadow(0 0 10px rgba(239,68,68,.8));"></i>
+                        </div>
+                        <div class="scan-beam" style="animation-duration:2.5s;">
+                            <div style="position:absolute;top:50%;left:50%;width:50%;height:2px;transform-origin:left center;background:linear-gradient(90deg,#ef4444,transparent);border-radius:2px;"></div>
+                        </div>
+                    </div>
+                    <h2 style="color:#ef4444;display:flex;align-items:center;gap:12px;justify-content:center;">Malware & Virus Scanner 
+                        <button onclick="document.getElementById('virus-db-modal').style.display='flex'" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.4);border-radius:50%;color:#ef4444;cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center;transition:background 0.2s;" title="View Supported Databases">
+                            <i data-lucide="info" style="width:16px;height:16px;"></i>
+                        </button>
+                    </h2>
+                    <p>Rapid signature matching against 30+ known databases (Trojans, Spyware, Ransomware).</p>
+
+                    <div style="margin:20px auto 0;max-width:480px;background:var(--bg-main);border:1px solid rgba(239,68,68,0.2);border-radius:14px;padding:18px 20px;">
+                        <div style="display:flex;gap:10px;margin-bottom:12px;">
+                            <button id="vscan-mode-quick" onclick="setVirusScanMode('quick')" style="flex:1;padding:10px;border-radius:10px;border:2px solid #ef4444;background:#ef4444;color:#fff;font-weight:700;cursor:pointer;font-size:.85rem;transition:all 0.2s;">
+                                ⚡ User Apps
+                            </button>
+                            <button id="vscan-mode-deep" onclick="setVirusScanMode('deep')" style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--border-color);background:transparent;color:var(--text-main);font-weight:600;cursor:pointer;font-size:.85rem;transition:all 0.2s;">
+                                🔬 Full System
+                            </button>
+                        </div>
+                        <span id="virus-eta-label" style="font-size:0.82rem;color:var(--text-muted);">⏱ Est: calculating...</span>
+                    </div>
+
+                    <div style="margin-top:28px;">
+                        <button id="start-virus-btn" style="min-width:240px;padding:14px 28px;font-size:1.05rem;font-weight:700;background:linear-gradient(135deg,#dc2626,#991b1b);color:#fff;border:none;border-radius:10px;cursor:pointer;box-shadow:0 6px 20px rgba(220,38,38,0.4);transition:all 0.2s;letter-spacing:0.5px;">
+                            <i data-lucide="biohazard" style="display:inline-block;vertical-align:middle;margin-right:8px;width:20px;height:20px;"></i>
+                            START VIRUS SCAN
+                        </button>
+                    </div>
+                </div>
+
+                <div id="virus-progress-area" style="display:none; max-width: 620px; margin: 30px auto 0; padding:24px; background:rgba(220,38,38,0.06); border:1px solid rgba(220,38,38,0.2); border-radius:16px;">
+                    <p style="font-size:0.8rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#ef4444;margin-bottom:14px;text-align:center;">Checking Signatures</p>
+                    <div class="progress-bar-wrapper">
+                        <div class="progress-bar" style="background:rgba(220,38,38,0.15);">
+                            <div class="progress-fill" id="virus-progress-fill" style="background:linear-gradient(90deg,#ef4444,#dc2626);"></div>
+                        </div>
+                        <span id="virus-percent" style="color:#ef4444;">0%</span>
+                    </div>
+                    <p id="virus-status-text" style="text-align:center; color:var(--text-muted); font-size:0.85rem; margin-top:10px; font-family:'Courier New',monospace;">Loading engine...</p>
+                    <div id="virus-live-log" style="margin-top:15px; height:120px; overflow-y:auto; font-family:'Courier New',monospace; font-size:0.75rem; color:#10b981; line-height:1.6; padding:10px; background:rgba(0,0,0,0.4); border-radius:8px; border:1px solid rgba(255,255,255,0.05); display:flex; flex-direction:column-reverse;"></div>
+                </div>
+                <div id="virus-results-area" style="display:none; max-width: 620px; margin: 20px auto 0;"></div>
+            </div>
+
+            <!-- Explorer View -->
+            <div id="explorer-view" class="view-content">
+                <div class="explorer-container">
+                    <div class="explorer-header">
+                        <div class="path-bar">
+                            <button class="btn-icon" id="explorer-back-btn"><i data-lucide="arrow-left"></i></button>
+                            <span id="current-path">/sdcard/</span>
+                        </div>
+                    </div>
+                    <div class="file-grid" id="file-grid"></div>
+                </div>
+            </div>
+            
+            <!-- History View -->
+            <div id="history-view" class="view-content">
+                <div class="history-table-container">
+                    <table class="history-table">
+                        <thead>
+                            <tr><th>Date & Time</th><th>Device</th><th>Risk Score</th><th>Threats</th><th>Action</th></tr>
+                        </thead>
+                        <tbody id="history-list"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Processes View -->
+            <div id="processes-view" class="view-content">
+                <div class="history-table-container">
+                    <div class="panel-header" style="padding-bottom:16px;border-bottom:1px solid var(--border-color);margin-bottom:16px;">
+                        <div>
+                            <h3 style="font-family:'Plus Jakarta Sans',sans-serif;font-size:1.15rem;display:flex;align-items:center;gap:10px;margin:0 0 10px;">
+                                <i data-lucide="activity" style="color:var(--accent-primary);"></i> Active Processes
+                            </h3>
+                        </div>
+                        <button id="refresh-processes-btn" class="btn-primary" style="padding:8px 18px;font-size:0.88rem;">🔄 Refresh</button>
+                    </div>
+                    <table class="history-table">
+                        <thead>
+                            <tr><th>User</th><th>PID</th><th>Memory (RSS)</th><th>Process Name</th><th>Action</th></tr>
+                        </thead>
+                        <tbody id="processes-list"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Settings View -->
+            <div id="settings-view" class="view-content">
+                <div style="max-width:680px; margin:0 auto; display:flex; flex-direction:column; gap:20px;">
+                    <div style="background:var(--bg-panel); border-radius:16px; border:1px solid var(--border-color); padding:28px; box-shadow:var(--shadow-sm);">
+                        <h3 style="font-family:'Plus Jakarta Sans',sans-serif; margin:0 0 20px; display:flex; align-items:center; gap:10px;">
+                            <i data-lucide="moon" style="color:var(--accent-primary);"></i> Appearance
+                        </h3>
+                        <div style="display:flex;justify-content:space-between;align-items:center;padding:14px;background:var(--bg-main);border-radius:10px;border:1px solid var(--border-color);">
+                            <div>
+                                <strong style="font-size:0.9rem;">Theme</strong>
+                                <p style="margin:2px 0 0;font-size:0.78rem;color:var(--text-muted);">Switch between dark and light mode.</p>
+                            </div>
+                            <div style="display:flex;gap:8px;">
+                                <button onclick="setTheme('dark')" id="theme-dark-btn" style="padding:8px 16px;border-radius:8px;border:2px solid var(--accent-primary);background:var(--accent-primary);color:#fff;font-weight:700;cursor:pointer;font-size:0.83rem;">🌙 Dark</button>
+                                <button onclick="setTheme('light')" id="theme-light-btn" style="padding:8px 16px;border-radius:8px;border:2px solid var(--border-color);background:transparent;color:var(--text-main);font-weight:600;cursor:pointer;font-size:0.83rem;">☀️ Light</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Device Detail Modal -->
+    <div id="device-detail-modal" style="display:none;position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);align-items:center;justify-content:center;padding:24px;" onclick="if(event.target===this)toggleDeviceModal()">
+        <div style="background:var(--bg-panel);border-radius:24px;border:1px solid var(--border-color);width:100%;max-width:420px;box-shadow:0 40px 100px rgba(0,0,0,0.8);overflow:hidden;animation:slideInUp 0.3s cubic-bezier(0.16,1,0.3,1);">
+            <div style="background:linear-gradient(135deg,var(--accent-primary),#c084fc);padding:32px 28px 24px;position:relative;">
+                <button onclick="toggleDeviceModal()" style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.2);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s;">&times;</button>
+                <div style="display:flex;align-items:center;gap:18px;">
+                    <div style="width:64px;height:64px;background:rgba(255,255,255,0.2);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:2.2rem;border:2px solid rgba(255,255,255,0.3);box-shadow:0 8px 24px rgba(0,0,0,0.2);">📱</div>
+                    <div>
+                        <h2 id="modal-device-name" style="margin:0;font-family:'Plus Jakarta Sans',sans-serif;font-size:1.35rem;font-weight:800;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,0.2);">No Device</h2>
+                        <p id="modal-device-sub" style="margin:4px 0 0;font-size:0.85rem;color:rgba(255,255,255,0.8);">Connect a device via USB</p>
+                        <div style="display:flex; gap:8px; margin-top:8px;">
+                            <span id="modal-connected-badge" style="display:none; background:#10b981; color:#fff; font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:12px;">CONNECTED</span>
+                            <span style="background:rgba(0,0,0,0.2); color:#fff; font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:12px;"><i data-lucide="hash" style="width:10px;height:10px;display:inline-block;vertical-align:middle;"></i> <span id="modal-serial">--</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="padding:28px;display:flex;flex-direction:column;gap:16px;">
+                <div style="padding:16px;background:var(--bg-main);border-radius:12px;border:1px solid var(--border-color);">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                        <span style="font-size:0.85rem;color:var(--text-muted);font-weight:600;"><i data-lucide="battery" style="width:16px;height:16px;display:inline-block;vertical-align:text-bottom;margin-right:4px;"></i> Battery</span>
+                        <span id="modal-battery" style="font-size:0.95rem;font-weight:700;color:var(--text-main);">--</span>
+                    </div>
+                    <div style="height:8px;background:rgba(100,116,139,.2);border-radius:8px;overflow:hidden;">
+                        <div id="modal-battery-bar" style="height:100%;width:0%;background:#10b981;border-radius:8px;transition:width 0.8s cubic-bezier(0.16,1,0.3,1);"></div>
+                    </div>
+                </div>
+                <div style="padding:16px;background:var(--bg-main);border-radius:12px;border:1px solid var(--border-color);">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                        <span style="font-size:0.85rem;color:var(--text-muted);font-weight:600;"><i data-lucide="hard-drive" style="width:16px;height:16px;display:inline-block;vertical-align:text-bottom;margin-right:4px;"></i> Storage</span>
+                        <span id="modal-storage" style="font-size:0.95rem;font-weight:700;color:var(--text-main);">--</span>
+                    </div>
+                    <div style="height:8px;background:rgba(100,116,139,.2);border-radius:8px;overflow:hidden;">
+                        <div id="modal-storage-bar" style="height:100%;width:0%;background:#818cf8;border-radius:8px;transition:width 0.8s cubic-bezier(0.16,1,0.3,1);"></div>
+                    </div>
+                </div>
+                <div style="padding:16px;background:var(--bg-main);border-radius:12px;border:1px solid var(--border-color);">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                        <span style="font-size:0.85rem;color:var(--text-muted);font-weight:600;"><i data-lucide="cpu" style="width:16px;height:16px;display:inline-block;vertical-align:text-bottom;margin-right:4px;"></i> Memory (RAM)</span>
+                        <span id="modal-ram" style="font-size:0.95rem;font-weight:700;color:var(--text-main);">--</span>
+                    </div>
+                    <div style="height:8px;background:rgba(100,116,139,.2);border-radius:8px;overflow:hidden;">
+                        <div id="modal-ram-bar" style="height:100%;width:0%;background:#f59e0b;border-radius:8px;transition:width 0.8s cubic-bezier(0.16,1,0.3,1);"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Virus Database Modal -->
+    <div id="virus-db-modal" style="display:none;position:fixed;inset:0;z-index:10002;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);align-items:center;justify-content:center;padding:24px;" onclick="if(event.target===this)this.style.display='none'">
+        <div style="background:var(--bg-panel);border-radius:24px;border:1px solid var(--border-color);width:100%;max-width:650px;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 40px 100px rgba(0,0,0,0.8);animation:slideInUp 0.3s cubic-bezier(0.16,1,0.3,1);">
+            <div style="padding:24px 28px;border-bottom:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;background:rgba(239,68,68,0.1);">
+                <h3 style="margin:0;color:#ef4444;display:flex;align-items:center;gap:10px;font-family:'Plus Jakarta Sans',sans-serif;"><i data-lucide="shield-alert"></i> Supported Threat Signatures</h3>
+                <button onclick="document.getElementById('virus-db-modal').style.display='none'" style="background:rgba(255,255,255,0.1);border:none;color:var(--text-main);width:32px;height:32px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;">&times;</button>
+            </div>
+            <div style="padding:24px 28px;overflow-y:auto;flex:1;">
+                <p style="color:var(--text-muted);font-size:0.95rem;margin-top:0;line-height:1.5;">DroidScan Pro actively matches installed packages against these 30 most dangerous Android malware families:</p>
+                <div id="virus-db-list" style="margin-top:20px;display:grid;grid-template-columns:1fr;gap:8px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- File Preview Modal -->
+    <div id="preview-modal" style="display:none; position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); align-items:center; justify-content:center; padding:24px;">
+        <div style="background:var(--bg-panel); border-radius:20px; border:1px solid var(--border-color); max-width:860px; width:100%; max-height:88vh; display:flex; flex-direction:column; box-shadow:0 30px 80px rgba(0,0,0,0.8); overflow:hidden; animation:slideInUp 0.3s cubic-bezier(0.16,1,0.3,1);">
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:20px 28px; border-bottom:1px solid var(--border-color); flex-shrink:0;">
+                <h3 id="preview-filename" style="margin:0; font-family:'Plus Jakarta Sans',sans-serif; font-size:1.1rem; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:80%;"></h3>
+                <button id="close-preview-btn" style="background:rgba(255,255,255,0.1); border:none; width:36px; height:36px; border-radius:50%; font-size:1.4rem; cursor:pointer; color:var(--text-main); display:flex; align-items:center; justify-content:center; transition:background 0.2s;">&times;</button>
+            </div>
+            <div id="preview-content" style="overflow:auto; padding:24px; flex:1; min-height:0; background:var(--bg-main);"></div>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notification-root"></div>
+
+    <script>
+        // Particle Background Logic
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let w, h;
+        
+        function initCanvas() {
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
+            particles = [];
+            for (let i = 0; i < 50; i++) {
+                particles.push({
+                    x: Math.random() * w, y: Math.random() * h,
+                    vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5,
+                    size: Math.random() * 2 + 1, alpha: Math.random() * 0.5 + 0.1
+                });
+            }
+        }
+        function drawParticles() {
+            ctx.clearRect(0, 0, w, h);
+            const isDark = document.body.getAttribute('data-theme') === 'dark';
+            if (!isDark) return requestAnimationFrame(drawParticles);
+            
+            particles.forEach(p => {
+                p.x += p.vx; p.y += p.vy;
+                if (p.x < 0 || p.x > w) p.vx *= -1;
+                if (p.y < 0 || p.y > h) p.vy *= -1;
+                
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(129, 140, 248, ${p.alpha})`;
+                ctx.fill();
+            });
+            requestAnimationFrame(drawParticles);
+        }
+        window.addEventListener('resize', initCanvas);
+        initCanvas();
+        drawParticles();
+
+        // Populate Virus Database List
+        document.addEventListener('DOMContentLoaded', () => {
+            const vlist = document.getElementById('virus-db-list');
+            if(vlist) {
+                const viruses = [
+                    {name:"Pegasus", desc:"Zero-click advanced spyware"}, {name:"Joker", desc:"Premium SMS billing malware"},
+                    {name:"Cerberus", desc:"2FA bypass banking trojan"}, {name:"Anubis", desc:"Steals banking OTPs via screen recording"},
+                    {name:"xHelper", desc:"Persistent dropper surviving factory resets"}, {name:"Simplocker", desc:"Encrypts photos for ransom"},
+                    {name:"FluBot", desc:"SMS-spreading malware"}, {name:"Hydra", desc:"Overlays crypto wallets"},
+                    {name:"BlackRock", desc:"Password stealer for 300+ apps"}, {name:"SharkBot", desc:"Auto-Transfer banking trojan"},
+                    {name:"AlienBot", desc:"Banking Malware-as-a-service"}, {name:"Octo", desc:"Remote control spyware"},
+                    {name:"TeaBot", desc:"Screen streaming trojan"}, {name:"Medusa", desc:"Records all keystrokes"},
+                    {name:"Exobot", desc:"Creates fake login screens"}, {name:"BRATA", desc:"Remote Access Trojan with screen wipe"},
+                    {name:"Vultur", desc:"Live screen logging via VNC"}, {name:"Triada", desc:"System process hook rootkit"},
+                    {name:"LeakerLocker", desc:"Browser history and photo leaker"}, {name:"DoubleLocker", desc:"Changes device PIN & encrypts data"},
+                    {name:"HummingBad", desc:"Root access adware"}, {name:"Agent Smith", desc:"Replaces apps with malicious clones"},
+                    {name:"GhostPush", desc:"Hijacks root to install unwanted apps"}, {name:"Gooligan", desc:"Compromises Google accounts"},
+                    {name:"Dropper.Clast", desc:"Bypasses Play Protect for payloads"}, {name:"Vbmeta Corruptor", desc:"Corrupts boot partition"},
+                    {name:"CopyCat", desc:"Injects code into Zygote for ads"}, {name:"HiddenAds", desc:"Invisible ads draining battery"},
+                    {name:"FakeApp", desc:"Fake WhatsApp/Facebook clone"}, {name:"Loapi", desc:"Mines Monero, causes hardware overheating"}
+                ];
+                viruses.forEach((v, i) => {
+                    const color = i < 5 ? '#ef4444' : i < 20 ? '#f59e0b' : '#3b82f6';
+                    vlist.innerHTML += `<div style="background:var(--bg-main);padding:10px 16px;border-radius:10px;border-left:3px solid ${color}; display:flex; flex-wrap:wrap; gap:10px; align-items:center;"><strong style="color:var(--text-main);min-width:140px;font-size:0.9rem;">${i+1}. ${v.name}</strong> <span style="color:var(--text-muted);font-size:0.85rem;">- ${v.desc}</span></div>`;
+                });
+            }
+        });
+    </script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
