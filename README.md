@@ -120,5 +120,4 @@ This project is licensed under the **MIT License** – see the [LICENSE](LICENSE
 
 ---
 
-Made By Vansh Yadav<img width="860" height="860" alt="image" src="https://github.com/user-attachments/assets/0e69990d-0ccb-4e01-ba07-cbb2a81a425a" />
-
+  Made By Vansh Yadav
