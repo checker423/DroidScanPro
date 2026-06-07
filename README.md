@@ -41,6 +41,52 @@ pip install -r requirements.txt
 > The repository already contains a copy of `adb.exe` for Windows. If you prefer your own Android SDK, edit **line 20** in `app.py` to point at the correct `adb` path.
 
 ---
+### Method 2: Running in VS Code (Visual Studio Code)
+
+1. **Open the Project Folder:**
+   - Open VS Code.
+   - Go to **File > Open Folder...** and select the project directory.
+
+2. **Set up Python Environment:**
+   - Ensure the official **Python Extension** by Microsoft is installed.
+   - Press `Ctrl + Shift + P` (or `Cmd + Shift + P` on macOS) to open the Command Palette.
+   - Type and select **Python: Select Interpreter**.
+   - Choose your virtual environment (`.venv`) from the list.
+
+3. **Run using VS Code Terminal:**
+   - Open an integrated terminal: `Ctrl + ~` (or **Terminal > New Terminal**).
+   - The virtual environment should auto-activate (you will see `(.venv)` in the command prompt).
+   - Run the application:
+     ```bash
+     python app.py
+     ```
+
+4. **Run using VS Code Debugger (Recommended):**
+   - Click on the **Run and Debug** tab on the left sidebar (or press `Ctrl + Shift + D`).
+   - Select **Run and Debug** and choose **Python Debugger > Python File** (while having `app.py` open).
+   - *Alternative:* Create a debug configuration file at `.vscode/launch.json` with this config to run it easily:
+     ```json
+     {
+         "version": "0.2.0",
+         "configurations": [
+             {
+                 "name": "Python: DroidScan App",
+                 "type": "debugpy",
+                 "request": "launch",
+                 "program": "app.py",
+                 "console": "integratedTerminal",
+                 "justMyCode": true
+             }
+         ]
+     }
+     ```
+     Once saved, you can run the app simply by pressing `F5`.
+
+## Important Notes
+
+*   **ADB Authorization:** The first time you connect your device, you may need to accept an RSA key prompt on your Android device to allow USB debugging from your computer.
+*   The `.gitignore` file is already set up to exclude unnecessary files like `__pycache__`, `.idea`, `.venv`, and database files from being uploaded to GitHub.
+
 
 ## 🚀 Quick start
 ### Mock demo (no device)
